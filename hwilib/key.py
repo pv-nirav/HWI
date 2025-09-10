@@ -381,14 +381,16 @@ def get_bip44_purpose(addrtype: AddressType) -> int:
         raise ValueError("Unknown address type")
 
 
-def get_bip44_chain(chain: Chain) -> int:
+def get_bip44_chain(chain: Chain, coin_type: int|None) -> int:
     """
     Determine the BIP 44 coin type based on the Bitcoin chain type.
-
+    If coin_type is not None, it returns coin_type.
     For the Bitcoin mainnet chain, this returns 0. For the other chains, this returns 1.
 
     :param chain: The chain
     """
+    if coin_type is not None:
+        return coin_type
     if chain == Chain.MAIN:
         return 0
     else:
@@ -412,6 +414,7 @@ def is_standard_path(
     path: Sequence[int],
     addrtype: AddressType,
     chain: Chain,
+    coin_type: int|None
 ) -> bool:
     if len(path) != 5:
         return False
@@ -424,8 +427,8 @@ def is_standard_path(
         return False
     if computed_addrtype != addrtype:
         return False
-    if path[1] != H_(get_bip44_chain(chain)):
+    if path[1] != H_(get_bip44_chain(chain,coin_type)):
         return False
-    if path[3] not in [0, 1]:
+    if path[3] not in [0, 1,coin_type]:
         return False
     return True

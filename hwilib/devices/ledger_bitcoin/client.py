@@ -289,7 +289,7 @@ def createClient(comm_client: Optional[TransportClient] = None, chain: Chain = C
     base_client = Client(comm_client, chain)
     app_name, app_version, _ = base_client.get_version()
 
-    if app_name not in ["Bitcoin", "Bitcoin Test", "Bitcoin Legacy", "Bitcoin Test Legacy", "app"]:
+    if app_name not in ["Bitcoin", "Bitcoin Test", "Bitcoin Legacy", "Bitcoin Test Legacy", "app", "Btcext Boilerplate Testnet" , "Btcext Boilerplate"]:
         raise NotSupportedError(0x6A82, None, "Ledger is not in either the Bitcoin or Bitcoin Testnet app")
 
     app_version_major, app_version_minor, _ = app_version.split(".", 2)

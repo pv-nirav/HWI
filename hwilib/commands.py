@@ -302,7 +302,7 @@ def getdescriptor(
         parsed_path.append(H_(get_bip44_purpose(addr_type)))
 
         # Coin type
-        parsed_path.append(H_(get_bip44_chain(client.chain)))
+        parsed_path.append(H_(get_bip44_chain(client.chain,client.coin_type)))
 
         # Account
         parsed_path.append(H_(account))

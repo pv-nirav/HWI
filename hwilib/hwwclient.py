@@ -27,7 +27,7 @@ class HardwareWalletClient(object):
     that hardware wallet subclasses should implement.
     """
 
-    def __init__(self, path: str, password: Optional[str], expert: bool, chain: Chain = Chain.MAIN) -> None:
+    def __init__(self, path: str, password: Optional[str], expert: bool, chain: Chain = Chain.MAIN, coin_type: int|None = None) -> None:
         """
         :param path: Path to the device as returned by :func:`~hwilib.commands.enumerate`
         :param password: A password/passphrase to use with the device.
@@ -39,6 +39,7 @@ class HardwareWalletClient(object):
         self.password = password
         self.message_magic = b"\x18Bitcoin Signed Message:\n"
         self.chain = chain
+        self.coin_type = coin_type
         self.fingerprint: Optional[str] = None
         # {bip32_path: <xpub string>}
         self.xpub_cache: Dict[str, str] = {}
@@ -53,7 +54,7 @@ class HardwareWalletClient(object):
 
         :return: The extended public key
         """
-        path = f"m/{get_bip44_purpose(addrtype)}h/{get_bip44_chain(self.chain)}h/{account}h"
+        path = f"m/{get_bip44_purpose(addrtype)}h/{get_bip44_chain(self.chain,self.coin_type)}h/{account}h"
         return self.get_pubkey_at_path(path)
 
     def get_master_fingerprint(self) -> bytes:
