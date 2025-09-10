@@ -164,7 +164,7 @@ class LedgerClient(HardwareWalletClient):
             else:
                 self.transport_client = TransportClient(interface="hid", debug=is_debug, hid_path=path.encode())
 
-            self.client = createClient(self.transport_client, chain=self.chain, debug=is_debug)
+            self.client = createClient(self.transport_client, chain=self.chain, debug=is_debug,coin_type=self.coin_type)
         except NotSupportedError as e:
             raise DeviceConnectionError(e.args[2])
 

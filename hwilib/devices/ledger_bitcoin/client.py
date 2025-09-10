@@ -282,15 +282,19 @@ class NewClient(Client):
         return base64.b64encode(response).decode('utf-8')
 
 
-def createClient(comm_client: Optional[TransportClient] = None, chain: Chain = Chain.MAIN, debug: bool = False) -> Union[LegacyClient, NewClient]:
+def createClient(comm_client: Optional[TransportClient] = None, chain: Chain = Chain.MAIN, debug: bool = False,coin_type:int|None = None) -> Union[LegacyClient, NewClient]:
     if comm_client is None:
         comm_client = TransportClient("hid", debug=debug)
 
     base_client = Client(comm_client, chain)
     app_name, app_version, _ = base_client.get_version()
 
-    if app_name not in ["Bitcoin", "Bitcoin Test", "Bitcoin Legacy", "Bitcoin Test Legacy", "app", "Btcext Boilerplate Testnet" , "Btcext Boilerplate"]:
-        raise NotSupportedError(0x6A82, None, "Ledger is not in either the Bitcoin or Bitcoin Testnet app")
+    if coin_type is not None:
+        if app_name not in ["app", "RGB" , "RGB Test"]:
+            raise NotSupportedError(0x6A82, None, "Ledger is not in either the RGB or RGB Test app")
+    else:
+        if app_name not in ["Bitcoin", "Bitcoin Test", "Bitcoin Legacy", "Bitcoin Test Legacy", "app"]:
+            raise NotSupportedError(0x6A82, None, "Ledger is not in either the Bitcoin or Bitcoin Testnet app")
 
     app_version_major, app_version_minor, _ = app_version.split(".", 2)
 
