@@ -54,7 +54,7 @@ import hid
 from ..key import (
     ExtendedKey,
     get_bip44_purpose,
-    get_bip44_chain,
+    get_slip44_coin_type,
     H_,
     is_standard_path,
     KeyOriginInfo,
@@ -150,8 +150,8 @@ def ledger_exception(f: Callable[..., Any]) -> Any:
 # This class extends the HardwareWalletClient for Ledger Nano S and Nano X specific things
 class LedgerClient(HardwareWalletClient):
 
-    def __init__(self, path: str, password: Optional[str] = None, expert: bool = False, chain: Chain = Chain.MAIN,coin_type: int|None = None) -> None:
-        super(LedgerClient, self).__init__(path, password, expert, chain,coin_type)
+    def __init__(self, path: str, password: Optional[str] = None, expert: bool = False, chain: Chain = Chain.MAIN,is_rgb: bool = False) -> None:
+        super(LedgerClient, self).__init__(path, password, expert, chain,is_rgb)
 
         is_debug = logging.getLogger().getEffectiveLevel() == logging.DEBUG
 
@@ -164,7 +164,7 @@ class LedgerClient(HardwareWalletClient):
             else:
                 self.transport_client = TransportClient(interface="hid", debug=is_debug, hid_path=path.encode())
 
-            self.client = createClient(self.transport_client, chain=self.chain, debug=is_debug,coin_type=self.coin_type)
+            self.client = createClient(self.transport_client, chain=self.chain, debug=is_debug,coin_type=self.is_rgb)
         except NotSupportedError as e:
             raise DeviceConnectionError(e.args[2])
 
@@ -309,7 +309,7 @@ class LedgerClient(HardwareWalletClient):
                     )
             else:
                 def process_origin(origin: KeyOriginInfo) -> None:
-                    if not is_standard_path(origin.path, script_addrtype, self.chain,self.coin_type):
+                    if not is_standard_path(origin.path, script_addrtype, self.chain,self.is_rgb):
                         # TODO: Deal with non-default wallets
                         return
                     policy = self._get_singlesig_default_wallet_policy(script_addrtype, origin.path[2])
@@ -399,7 +399,7 @@ class LedgerClient(HardwareWalletClient):
         else:
             BadArgumentError("Unknown address type")
 
-        path = [H_(get_bip44_purpose(addr_type)), H_(get_bip44_chain(self.chain,self.coin_type)), H_(account)]
+        path = [H_(get_bip44_purpose(addr_type)), H_(get_slip44_coin_type(self.chain,self.is_rgb)), H_(account)]
 
         # Build a PubkeyProvider for the key we're going to use
         origin = KeyOriginInfo(self.get_master_fingerprint(), path)
@@ -432,7 +432,7 @@ class LedgerClient(HardwareWalletClient):
             origin = KeyOriginInfo(self.get_master_fingerprint(), path)
             wallet = WalletPolicy(name="", descriptor_template=template, keys_info=["[{}]".format(origin.to_string(hardened_char="'"))])
         else:
-            if not is_standard_path(path, addr_type, self.chain,self.coin_type):
+            if not is_standard_path(path, addr_type, self.chain,self.is_rgb):
                 raise BadArgumentError("Ledger requires BIP 44 standard paths")
 
             wallet = self._get_singlesig_default_wallet_policy(addr_type, path[2])

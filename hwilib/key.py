@@ -381,20 +381,23 @@ def get_bip44_purpose(addrtype: AddressType) -> int:
         raise ValueError("Unknown address type")
 
 
-def get_bip44_chain(chain: Chain, coin_type: int|None) -> int:
+def get_slip44_coin_type(chain: Chain, is_rgb: bool = False) -> int:
     """
-    Determine the BIP 44 coin type based on the Bitcoin chain type.
-    If coin_type is not None, it returns coin_type.
-    For the Bitcoin mainnet chain, this returns 0. For the other chains, this returns 1.
+    Return the SLIP-44 coin type for the given chain.
 
-    :param chain: The chain
+    :param chain: The Bitcoin chain (main/test/signet/regtest)
+    :param is_rgb: If True, return the RGB coin type instead of Bitcoin's
+
+    Bitcoin:
+        - Mainnet: 0
+        - Testnet/Signet/Regtest: 1
+    RGB:
+        - Mainnet: 827166
+        - Testnet/Signet/Regtest: 827167
     """
-    if coin_type is not None:
-        return coin_type
-    if chain == Chain.MAIN:
-        return 0
-    else:
-        return 1
+    if is_rgb:
+        return 827166 if chain == Chain.MAIN else 827167
+    return 0 if chain == Chain.MAIN else 1
 
 def get_addrtype_from_bip44_purpose(index: int) -> Optional[AddressType]:
     purpose = index & ~HARDENED_FLAG
@@ -414,7 +417,7 @@ def is_standard_path(
     path: Sequence[int],
     addrtype: AddressType,
     chain: Chain,
-    coin_type: int|None
+    is_rgb: bool
 ) -> bool:
     if len(path) != 5:
         return False
@@ -427,8 +430,8 @@ def is_standard_path(
         return False
     if computed_addrtype != addrtype:
         return False
-    if path[1] != H_(get_bip44_chain(chain,coin_type)):
+    if path[1] != H_(get_slip44_coin_type(chain,is_rgb)):
         return False
-    if path[3] not in [0, 1,coin_type]:
+    if path[3] not in [0, 1, 827166, 827167]:
         return False
     return True

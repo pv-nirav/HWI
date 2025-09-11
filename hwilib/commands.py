@@ -25,7 +25,7 @@ import platform
 from ._base58 import xpub_to_pub_hex, xpub_to_xonly_pub_hex
 from .key import (
     get_bip44_purpose,
-    get_bip44_chain,
+    get_slip44_coin_type,
     H_,
     HARDENED_FLAG,
     is_hardened,
@@ -302,7 +302,7 @@ def getdescriptor(
         parsed_path.append(H_(get_bip44_purpose(addr_type)))
 
         # Coin type
-        parsed_path.append(H_(get_bip44_chain(client.chain,client.coin_type)))
+        parsed_path.append(H_(get_slip44_coin_type(client.chain,client.is_rgb)))
 
         # Account
         parsed_path.append(H_(account))
